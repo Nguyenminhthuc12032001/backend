@@ -7,7 +7,7 @@ const validUser = [
     body('password_hash').trim().notEmpty().withMessage('Password cannot be empty'),
     body('confirmPassword').trim().notEmpty().withMessage('Confirm Password cannot be empty')
         .custom((value, {req}) => {
-            if (value !== req.body.password) {
+            if (value !== req.body.password_hash) {
                 throw new Error('Confirm Password must match Password');
             }
             return true;
