@@ -12,7 +12,6 @@ const petSchema = new mongoose.Schema({
     default: "unknown" 
   },
   description: { type: String },
-  createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Pet", petSchema);
