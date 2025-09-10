@@ -22,6 +22,5 @@ const validationAdmin = [
 ]
 
 module.exports = {
-    validationMovie,
     validationAdmin
 }
