@@ -10,7 +10,7 @@ const validationAdmin = [
             }
             return true;
         }),
-    body('role').optional().isIn(['admin', 'superAdmin', 'moderator']).withMessage('Role must be one of admin, superAdmin, or moderator'),
+    body('role').optional().isIn(['admin']).withMessage('Role must be one of admin'),
 
     (req, res, next) => {
         const errors = validationResult(req);
