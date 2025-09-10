@@ -1,10 +1,10 @@
 const router = require('express').Router();
 const { verifyToken, checkRole } = require('../middlewares/authentication.middlewares');
 const adminController = require('../controllers/admin.controller');
-const { validationAdmin } = require('../middlewares/validdation.middlewares');
+const { validationUser } = require('../middlewares/validdation.middlewares');
 const { body, validationResult } = require('express-validator');
 
-router.post('/createNew', [verifyToken, checkRole('admin'), validationAdmin], adminController.createNew);
+router.post('/createNew', [verifyToken, checkRole('admin'), validationUser], adminController.createNew);
 router.get('/getAll', [verifyToken, checkRole('admin')], adminController.getAll);
 router.get('/get/:id', [verifyToken, checkRole('admin')], adminController.get);
 router.put('/update/:id', [verifyToken, checkRole('admin'), 

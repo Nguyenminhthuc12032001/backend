@@ -1,6 +1,6 @@
 const {body, validationResult} = require('express-validator');
 
-const validationAdmin = [
+const validationUser = [
     body('username').trim().notEmpty().withMessage('Username cannot be empty'),
     body('password').trim().notEmpty().withMessage('Password cannot be empty'),
     body('confirmPassword').trim().notEmpty().withMessage('Confirm Password cannot be empty')
@@ -10,7 +10,7 @@ const validationAdmin = [
             }
             return true;
         }),
-    body('role').optional().isIn(['admin']).withMessage('Role must be one of admin'),
+    body('role').optional().isIn(['admin', 'owner', 'doctor', "shelter"]).withMessage('Role must be one of admin, owner, doctor, shelter'),
 
     (req, res, next) => {
         const errors = validationResult(req);
@@ -22,5 +22,5 @@ const validationAdmin = [
 ]
 
 module.exports = {
-    validationAdmin
+    validationUser
 }
