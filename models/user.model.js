@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ['admin', 'owner', 'doctor', "shelter"],
-        default: 'user'
+        default: 'owner'
     },
     token: { type: String },
     verified_date: { type: Date },
@@ -40,14 +40,14 @@ const userSchema = new mongoose.Schema({
 })
 
 userSchema.pre('save', async function (next) {
-    if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 10);
+    if (this.isModified('password_hash')) {
+        this.password_hash = await bcrypt.hash(this.password_hash, 10);
     }
     next();
 })
 
 userSchema.methods.comparePassword = async function (inputPassword) {
-    return await bcrypt.compare(inputPassword, this.password);
+    return await bcrypt.compare(inputPassword, this.password_hash);
 }
 
 module.exports = mongoose.model('User', userSchema);

@@ -4,12 +4,12 @@ require('dotenv').config();
 
 const createNew = async (req, res) => {
     try {
-        const { name, email, phone, password_hash, role } = req.body;
+        const { name, email, phone_number, password_hash, role } = req.body;
         const existingUser = await userModel.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ msg: 'Email already exists' });
         }
-        const newUser = new userModel({ name, email, phone, password_hash, role });
+        const newUser = new userModel({ name, email, phone_number, password_hash, role });
         await newUser.save();
         return res.status(201).json({ msg: 'User created successfully', admin: newUser });
     } catch (error) {
@@ -45,7 +45,7 @@ const update = async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
         const { password, role } = req.body;
-        user.password = password || user.password;
+        user.password_hash = password || user.password_hash;
         user.role = role || user.role;
         await user.save();
         return res.status(200).json({ msg: 'User updated successfully', user });
