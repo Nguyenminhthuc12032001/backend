@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 
-const adminRoutes = require('./routes/user.routes');
+const userRoutes = require('./routes/user.routes');
 const petRoutes = require('./routes/pet.routes');
 app.use(cors());
 app.use(express.json());
