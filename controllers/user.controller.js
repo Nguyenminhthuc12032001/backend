@@ -77,6 +77,7 @@ const search = async (req, res) => {
         }
         const admins = await adminModel.find(query);
         return res.status(200).json({ admins });
+        
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
