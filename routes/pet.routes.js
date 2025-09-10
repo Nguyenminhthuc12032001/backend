@@ -1,50 +1,26 @@
-const router = require('express').Router();
-const { verifyToken, checkRole } = require('../middlewares/authentication.middlewares');
-const petController = require('../controllers/pet.controller');
-const { body, validationResult } = require('express-validator');
+const express = require("express");
+const router = express.Router();
 
-router.post('/createNew',
-    [
-        /*verifyToken,
-        checkRole('owner'),*/
-        body('name').isString().notEmpty().withMessage('Name is required'),
-        body('species').isString().notEmpty().withMessage('Species is required'),
-        body('age').optional().isInt({ min: 0 }).withMessage('Age must be >= 0'),
-        body('gender').optional().isIn(['male','female','unknown']).withMessage('Invalid gender'),
-        (req, res, next) => {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-            next();
-        }
-    ],
-    petController.createNew
-);
+//Import petcontroller và middleware {validatePet}
+const petController = require("../controllers/pet.controller");
+const  {validatePet}  = require("../middlewares/pet.middleware");
 
-router.get('/getAll', [verifyToken, checkRole('admin')], petController.getAll);
+// 🐶 Tạo pet mới (bắt buộc validate dữ liệu)
+router.post("/createNew", validatePet, petController.createNew);
 
-router.get('/get/:id', [verifyToken], petController.get);
+// 🐶 Lấy tất cả pets
+router.get("/getAll", petController.getAll);
 
-router.put('/update/:id',
-    [
-        verifyToken,
-        checkRole('owner'),
-        body('age').optional().isInt({ min: 0 }),
-        body('gender').optional().isIn(['male','female','unknown']),
-        (req, res, next) => {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-            next();
-        }
-    ],
-    petController.update
-);
+// 🐶 Lấy 1 pet theo id
+router.get("/:id", petController.get);
 
-router.delete('/remove/:id', [verifyToken], petController.remove);
+// 🐶 Update pet (validate dữ liệu trước khi update)
+router.put("/:id", validatePet, petController.update);
 
-router.get('/search', [verifyToken], petController.search);
+// 🐶 Delete pet
+router.delete("/:id", petController.remove);
+
+// 🐶 Search pets theo query (name, species, breed, gender)
+router.get("/search/query", petController.search);
 
 module.exports = router;
