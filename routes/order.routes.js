@@ -3,7 +3,6 @@ const { verifyToken, checkRole } = require('../middlewares/authentication.middle
 const orderController = require('../controllers/order.controller');
 const { body, validationResult } = require('express-validator');
 
-// Create new order (owner)
 router.post('/createNew',
     [
         verifyToken,
@@ -21,13 +20,10 @@ router.post('/createNew',
     orderController.createNew
 );
 
-// Get all orders (admin)
 router.get('/getAll', [verifyToken, checkRole('admin')], orderController.getAll);
 
-// Get order by ID
 router.get('/get/:id', [verifyToken], orderController.get);
 
-// Update order (admin có thể đổi status, owner có thể update info trước khi thanh toán)
 router.put('/update/:id',
     [
         verifyToken,
@@ -43,10 +39,8 @@ router.put('/update/:id',
     orderController.update
 );
 
-// Remove order (admin)
 router.delete('/remove/:id', [verifyToken, checkRole('admin')], orderController.remove);
 
-// Search orders (owner: chỉ thấy của mình, admin: thấy tất cả)
 router.get('/search', [verifyToken], orderController.search);
 
 module.exports = router;

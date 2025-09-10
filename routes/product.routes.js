@@ -1,14 +1,16 @@
 const router = require('express').Router();
 const { verifyToken, checkRole } = require('../middlewares/authentication.middlewares');
-const orderItemController = require('../controllers/orderItem.controller');
+const productController = require('../controllers/product.controller');
 const { body, validationResult } = require('express-validator');
 
 router.post('/createNew',
     [
         verifyToken,
         checkRole('admin'),
-        body('quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
-        body('price_each').isFloat({ min: 0 }).withMessage('Price must be non-negative'),
+        body('name').isString().notEmpty().withMessage('Name is required'),
+        body('category').isString().notEmpty().withMessage('Category is required'),
+        body('price').isFloat({ min: 0 }).withMessage('Price must be >= 0'),
+        body('stock_quantity').isInt({ min: 0 }).withMessage('Stock must be >= 0'),
         (req, res, next) => {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -17,19 +19,19 @@ router.post('/createNew',
             next();
         }
     ],
-    orderItemController.createNew
+    productController.createNew
 );
 
-router.get('/getAll', [verifyToken, checkRole('admin')], orderItemController.getAll);
+router.get('/getAll', productController.getAll);
 
-router.get('/get/:id', [verifyToken], orderItemController.get);
+router.get('/get/:id', productController.get);
 
 router.put('/update/:id',
     [
         verifyToken,
         checkRole('admin'),
-        body('quantity').optional().isInt({ min: 1 }),
-        body('price_each').optional().isFloat({ min: 0 }),
+        body('price').optional().isFloat({ min: 0 }),
+        body('stock_quantity').optional().isInt({ min: 0 }),
         (req, res, next) => {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -38,11 +40,11 @@ router.put('/update/:id',
             next();
         }
     ],
-    orderItemController.update
+    productController.update
 );
 
-router.delete('/remove/:id', [verifyToken, checkRole('admin')], orderItemController.remove);
+router.delete('/remove/:id', [verifyToken, checkRole('admin')], productController.remove);
 
-router.get('/search', [verifyToken], orderItemController.search);
+router.get('/search', productController.search);
 
 module.exports = router;
