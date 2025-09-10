@@ -17,7 +17,7 @@ const createNew = async (req, res) => {
     }
 }
 
-const getAll = async (res) => {
+const getAll = async (req, res) => {
     try {
         const users = await userModel.find();
         return res.status(200).json({ users });
@@ -44,8 +44,11 @@ const update = async (req, res) => {
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
-        const { password, role } = req.body;
-        user.password_hash = password || user.password_hash;
+        const { name, email, phone_number, password_hash, role } = req.body;
+        user.name = name || user.name;
+        user.email = email || user.email;
+        user.phone_number = phone_number || user.phone_number;
+        user.password_hash = password_hash || user.password_hash;
         user.role = role || user.role;
         await user.save();
         return res.status(200).json({ msg: 'User updated successfully', user });
@@ -54,9 +57,24 @@ const update = async (req, res) => {
     }
 }
 
+const resetPassword = async (req, res) => {
+    try {
+        const user = await userModel.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+        const { password_hash } = req.body;
+        user.password_hash = password_hash;
+        await user.save();
+        return res.status(200).json({ msg: "Reset password successfully. "})
+    } catch (error) {
+        return res.status(500).json({ error: error.message })
+    }
+}
+
 const remove = async (req, res) => {
     try {
-        const result = await adminModel.deleteOne({ _id: req.params.id });
+        const result = await userModel.deleteOne({ _id: req.params.id });
         if (result.deletedCount === 0) {
             return res.status(404).json({ msg: 'User not found, unable to delete' });
         }
@@ -69,15 +87,14 @@ const remove = async (req, res) => {
 const search = async (req, res) => {
     try {
         const query = {};
-        if (req.query.username) {
-            query.username = { $regex: req.query.username, $options: 'i' };
+        if (req.query.name) {
+            query.name = { $regex: req.query.name, $options: 'i' };
         }
         if (req.query.role) {
             query.role = { $regex: req.query.role, $options: 'i' };
         }
-        const admins = await adminModel.find(query);
-        return res.status(200).json({ admins });
-        
+        const users = await userModel.find(query);
+        return res.status(200).json({ users });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -85,16 +102,16 @@ const search = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { username, password } = req.body;
-        const admin = await adminModel.findOne({ username });
-        if (!admin) {
+        const { email, password_hash } = req.body;
+        const user = await userModel.findOne({ email });
+        if (!user) {
             return res.status(401).json({ msg: 'User not found' });
         }
-        const isMatch = await admin.comparePassword(password);
+        const isMatch = await user.comparePassword(password_hash);
         if (!isMatch) {
             return res.status(401).json({ msg: 'Invalid password' });
         }
-        const token = jwt.sign({ id: admin._id, role: admin.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
         return res.status(200).json({ msg: 'Login successful', token });
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -106,6 +123,7 @@ module.exports = {
     getAll,
     get,
     update,
+    resetPassword,
     remove,
     search,
     login
