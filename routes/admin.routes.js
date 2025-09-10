@@ -4,10 +4,10 @@ const adminController = require('../controllers/admin.controller');
 const { validationAdmin } = require('../middlewares/validdation.middlewares');
 const { body, validationResult } = require('express-validator');
 
-router.post('/createNew', [verifyToken, checkRole('superAdmin'), validationAdmin], adminController.createNew);
-router.get('/getAll', [verifyToken, checkRole('superAdmin')], adminController.getAll);
-router.get('/get/:id', [verifyToken, checkRole('superAdmin')], adminController.get);
-router.put('/update/:id', [verifyToken, checkRole('superAdmin'), 
+router.post('/createNew', [verifyToken, checkRole('admin'), validationAdmin], adminController.createNew);
+router.get('/getAll', [verifyToken, checkRole('admin')], adminController.getAll);
+router.get('/get/:id', [verifyToken, checkRole('admin')], adminController.get);
+router.put('/update/:id', [verifyToken, checkRole('admin'), 
     body('password').isString().isLength({ min: 6, max: 20 }).optional().withMessage('Password must be between 6 and 20 characters'),
     body('role').optional().isIn(['admin', 'superadmin', 'moderator' ]).withMessage('Role must be one of admin, superadmin, or moderator'),
     (req, res, next) => {

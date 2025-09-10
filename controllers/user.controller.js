@@ -30,7 +30,7 @@ const get = async (req, res) => {
     try {
         const user = await userModel.findById(req.params.id)
         if (!user) {
-            return res.status(404).json({ msg: 'Admin not found' });
+            return res.status(404).json({ msg: 'User not found' });
         }
         return res.status(200).json({ admin });
     } catch (error) {
@@ -40,15 +40,15 @@ const get = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const admin = await adminModel.findById(req.params.id);
-        if (!admin) {
-            return res.status(404).json({ msg: 'Admin not found' });
+        const user = await userModel.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
         }
         const { password, role } = req.body;
-        admin.password = password || admin.password;
-        admin.role = role || admin.role;
-        await admin.save();
-        return res.status(200).json({ msg: 'Admin updated successfully', admin });
+        user.password = password || user.password;
+        user.role = role || user.role;
+        await user.save();
+        return res.status(200).json({ msg: 'User updated successfully', user });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -58,9 +58,9 @@ const remove = async (req, res) => {
     try {
         const result = await adminModel.deleteOne({ _id: req.params.id });
         if (result.deletedCount === 0) {
-            return res.status(404).json({ msg: 'Admin not found, unable to delete' });
+            return res.status(404).json({ msg: 'User not found, unable to delete' });
         }
-        return res.status(200).json({ msg: 'Admin deleted successfully' });
+        return res.status(200).json({ msg: 'User deleted successfully' });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -88,7 +88,7 @@ const login = async (req, res) => {
         const { username, password } = req.body;
         const admin = await adminModel.findOne({ username });
         if (!admin) {
-            return res.status(401).json({ msg: 'Admin not found' });
+            return res.status(401).json({ msg: 'User not found' });
         }
         const isMatch = await admin.comparePassword(password);
         if (!isMatch) {
