@@ -5,8 +5,8 @@ const { body, validationResult } = require('express-validator');
 
 router.post('/createNew',
     [
-        verifyToken,
-        checkRole('owner'),
+        /*verifyToken,
+        checkRole('owner'),*/
         body('name').isString().notEmpty().withMessage('Name is required'),
         body('species').isString().notEmpty().withMessage('Species is required'),
         body('age').optional().isInt({ min: 0 }).withMessage('Age must be >= 0'),
