@@ -37,6 +37,20 @@ const getAll = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+//Lấy tất cả dữ liệu của Pet chủ sỡ hữu
+const getAllAdmin = async (req, res) => {
+ try {
+  const pets = await petModel.find().populate("owner_id", "name email");
+
+  if (!pets || pets.length === 0) {
+    return res.status(404).json({ msg: "No pets found for this owner" });
+  }
+
+  return res.status(200).json({ pets });
+} catch (error) {
+  return res.status(500).json({ error: error.message });
+}
+};
 
 //Lấy 1 pet theo id
 const get = async (req, res) => {
@@ -184,6 +198,7 @@ const removeImage = async (req, res) => {
 module.exports = {
     createNew,
     getAll,
+    getAllAdmin,
     get,
     update,
     search,

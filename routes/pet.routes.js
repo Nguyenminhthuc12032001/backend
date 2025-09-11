@@ -4,13 +4,18 @@ const router = express.Router();
 //Import petcontroller và middleware {validatePet}
 const petController = require("../controllers/pet.controller");
 const  {validatePet}  = require("../middlewares/pet.middleware");
-const {verifyToken} =require("../middlewares/authentication.middlewares");
+const {verifyToken, checkRole} =require("../middlewares/authentication.middlewares");
+
 
 // 🐶 Tạo pet mới (bắt buộc validate dữ liệu)
 router.post("/createNew", [verifyToken, validatePet], petController.createNew);
 
 // 🐶 Lấy tất cả pets
 router.get("/getAll", verifyToken, petController.getAll);
+
+
+// 🐶 Lấy tất cả pets cho Admin
+router.get("/getAllAdmin", verifyToken, checkRole("admin"), petController.getAllAdmin);
 
 // 🐶 Lấy 1 pet theo id
 router.get("/get/:id", verifyToken, petController.get);
