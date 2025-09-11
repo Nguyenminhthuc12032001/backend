@@ -1,6 +1,9 @@
 const userModel = require('../models/user.model');
+const tokenModel = require('../models/token.model')
 const jwt = require('jsonwebtoken');
+const sendEmail = require('../utils/sendEmail');
 require('dotenv').config();
+const crypto = require("crypto");
 
 const createNew = async (req, res) => {
     try {
@@ -11,9 +14,38 @@ const createNew = async (req, res) => {
         }
         const newUser = new userModel({ name, email, phone_number, password_hash, role });
         await newUser.save();
+        const token = crypto.randomBytes(32).toString("hex");
+        await tokenModel.create({
+            user_id: newUser._id,
+            token,
+            type_token: "register"
+        });
+        const verifyLink = `${process.env.BACKEND_URL}/api/user/verifyEmail?token=${token}`;
+        await sendEmail(
+            newUser.email,
+            "Verify your email",
+            `<p>Hello ${newUser.name},</p>
+            <p>Click link below to verify your email:</p>
+            <a href="${verifyLink}">${verifyLink}</a>`
+        )
         return res.status(201).json({ msg: 'User created successfully', admin: newUser });
     } catch (error) {
         return res.status(500).json({ error: error.message });
+    }
+}
+
+const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.body;
+        const tokenDoc = await tokenModel.findOne({ token, type_token: "register" });
+        if (!tokenDoc) {
+            return res.status(404).json({ msg: "Invalid or expired token" });
+        }
+        await userModel.findByIdAndUpdate(tokenDoc.user_id, { is_verified: true });
+        await tokenModel.deleteOne({ _id: tokenDoc._id });
+        return res.status(200).json({ msg: "Email verified successfully" });
+    } catch (error) {
+        return res.status(500).json({ error: error.message })
     }
 }
 
@@ -57,15 +89,49 @@ const update = async (req, res) => {
     }
 }
 
+const resetPasswordRequest = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ msg: "User not found" });
+        }
+
+        const token = crypto.randomBytes(32).toString("hex");
+        await tokenModel.create({
+            user_id: user._id,
+            token,
+            type_token: "reset_password"
+        });
+        const resetLink = `${process.env.FRONTEND_URL}/resetPassword?token=${token}`;
+        await sendEmail(
+            user.email,
+            "Reset your password",
+            `<p>Hello ${user.name}</p>
+            <p>Click link below to reset your password:</p>
+            <a href="${resetLink}">${resetLink}</a>`
+        )
+        return res.status(200).json({ msg: "Reset password email sent." });
+    } catch (error) {
+        return res.status(500).json({ error: error.message })
+    }
+}
+
 const resetPassword = async (req, res) => {
     try {
-        const user = await userModel.findById(req.params.id);
-        if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
+        const { token, password_hash } = req.body;
+        const tokenDoc = await tokenModel.findOne({ token, type_token: "reset_password" });
+        if (!tokenDoc) {
+            return res.status(404).json({ msg: 'Invalid or expired token' });
         }
-        const { password_hash } = req.body;
+        const user = await userModel.findById(tokenDoc.user_id);
+        if (!user) {
+            return res.status(404).json({ msg: "User not found." })
+        }
         user.password_hash = password_hash;
+        user.versionToken += 1;
         await user.save();
+        await tokenModel.deleteOne({_id: tokenDoc._id });
         return res.status(200).json({ msg: "Reset password successfully. "})
     } catch (error) {
         return res.status(500).json({ error: error.message })
@@ -111,7 +177,7 @@ const login = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ msg: 'Invalid password' });
         }
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+        const token = jwt.sign({ id: user._id, role: user.role, versionToken: user.versionToken }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
         return res.status(200).json({ msg: 'Login successful', token });
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -126,5 +192,7 @@ module.exports = {
     resetPassword,
     remove,
     search,
-    login
+    login,
+    verifyEmail,
+    resetPasswordRequest
 }
