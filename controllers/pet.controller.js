@@ -4,9 +4,10 @@ const mongoose = require("mongoose");
 //Chức năng tạo pet mới cho chủ sỡ hữu (owner_id)
 const createNew = async (req, res) => {
     try {
-        console.log(req.body);
+        
         //Nhận giá trị từ frontend
-        const { owner_id, name, species, breed, age, gender, description,images } = req.body;
+        owner_id=req.user.id;
+        const {name, species, breed, age, gender, description,images } = req.body;
         const newPet = new petModel({ owner_id, name, species, breed, age, gender, description,images });
         /*
         await newPet.save() → lưu vào MongoDB.
