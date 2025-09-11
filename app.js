@@ -9,6 +9,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'))
 app.use('/api/user', userRoutes);
-app.use('/api/pet',petRoutes);
+app.use('/api/pet', petRoutes);
 
 module.exports = app;

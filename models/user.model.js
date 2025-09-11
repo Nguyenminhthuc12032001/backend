@@ -24,13 +24,14 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'owner', 'doctor', "shelter"],
         default: 'owner'
     },
-    token: { type: String },
-    verified_date: { type: Date },
-    type_token: { 
-        type: String,
-        enum: ["register", "reset_password"]
+    is_verified: { 
+        type: Boolean, 
+        default: false 
     },
-    is_verified: { type: Boolean, default: false },
+    versionToken: { 
+        type: Number, 
+        default: 0 
+    },
     createdAt: {
         type: Date,
         default: Date.now
