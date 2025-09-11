@@ -22,8 +22,15 @@ const createNew = async (req, res) => {
 
 //Lấy tất cả dữ liệu của Pet chủ sỡ hữu
 const getAll = async (req, res) => {
+    userid =  req.user.id;
+    console.log(userid);
   try {
-    const pets = await petModel.find({ owner_id: req.user.id });
+    const pets = await petModel.find({ owner_id: userid });
+
+    if (!pets || pets.length === 0) {
+      return res.status(404).json({ msg: "No pets found for this owner" });
+    }
+
     return res.status(200).json({ pets });
   } catch (error) {
     return res.status(500).json({ error: error.message });
