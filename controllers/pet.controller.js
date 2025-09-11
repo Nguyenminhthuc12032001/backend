@@ -147,30 +147,37 @@ const addImages = async (req, res) => {
 // Xóa 1 ảnh theo đường link
 const removeImage = async (req, res) => {
   try {
-    const { imageUrl } = req.body;
+    const { images } = req.body; // nhận mảng ảnh
 
-    if (!imageUrl) {
-      return res.status(400).json({ msg: "No image url provided" });
+    if (!images || images.length === 0) {
+      return res.status(400).json({ msg: "No image urls provided" });
     }
 
-    const updatedPet = await petModel.findByIdAndUpdate(
-      req.params.id,
-      { $pull: { images: imageUrl } },
-      { new: true }
-    );
-
-    if (!updatedPet) {
+    const pet = await petModel.findById(req.params.id);
+    if (!pet) {
       return res.status(404).json({ msg: "Pet not found" });
     }
 
-    return res.status(200).json({ msg: "Image removed successfully", pet: updatedPet });
+    // Kiểm tra có ít nhất 1 ảnh tồn tại trong pet không
+    const found = images.some(img => pet.images.includes(img));
+    if (!found) {
+      return res.status(404).json({ msg: "None of the provided images exist in this pet" });
+    }
+
+    // Xóa từng ảnh
+    images.forEach(img => {
+      if (pet.images.includes(img)) {
+        pet.images.pull(img);
+      }
+    });
+
+    await pet.save();
+
+    return res.status(200).json({ msg: "Images removed successfully", pet });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };
-
-
-
 
 
 module.exports = {
