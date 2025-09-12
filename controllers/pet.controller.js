@@ -25,7 +25,7 @@ const createNew = async (req, res) => {
 //Lấy tất cả dữ liệu của Pet chủ sỡ hữu
 const getAll = async (req, res) => {
     userid =  req.user.id;
-    console.log(userid);
+    console.log("Get ALL calling...");
   try {
     const pets = await petModel.find({ owner_id: userid });
 
@@ -68,6 +68,7 @@ const get = async (req, res) => {
 };
 //Cập nhật pet
 const update = async (req, res) => {
+  console.log("UPDATE IS CALLING.....");
     try {
         //req.params.id → lấy id từ URL (/pets/:id).
         const pet = await petModel.findById(req.params.id);
@@ -94,7 +95,7 @@ const update = async (req, res) => {
 
 //xóa pet(remove)
 const remove = async (req, res) => {
-    
+    console.log("REMOVE IS CALLING.....");
     // 🔎 Kiểm tra ObjectId hợp lệ
     const { id } = req.params; 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -113,6 +114,7 @@ const remove = async (req, res) => {
 
 //Tìm kiếm pet theo tiêu chí
 const search = async (req, res) => {
+  console.log("SEARCHPET IS CALLING.....");
     try {
         const query = {};
         if (req.query.name) {
