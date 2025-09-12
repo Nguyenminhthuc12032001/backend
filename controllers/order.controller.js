@@ -1,10 +1,28 @@
+const { default: mongoose } = require('mongoose');
 const orderModel = require('../models/order.model');
+const orderItemModel = require('../models/order_item.model')
+
+const createCart = async (req, res) => {
+    
+}
 
 const createNew = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
-        const { owner_id, total_amount, status } = req.body;
-        const newOrder = new orderModel({ owner_id, total_amount, status });
-        await newOrder.save();
+        const { user_id, total_amount, items } = req.body;
+        const newOrder = await orderModel.create({ user_id, total_amount }, { session });
+
+        const orderItems = items.map(item => ({
+            order_id: newOrder._id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price_each: item.price_each
+        }));
+        await orderItemModel.insertMany(orderItems, {session});
+        await session.commitTransaction();
+        session.endSession();
         return res.status(201).json({ msg: 'Order created successfully', order: newOrder });
     } catch (error) {
         return res.status(500).json({ error: error.message });

@@ -76,7 +76,7 @@ const update = async (req, res) => {
             return res.status(404).json({ msg: 'Pet not found' });
         }
 
-        const { name, species, breed, age, gender, description } = req.body;
+        const { name, species, breed, age, gender, description, images } = req.body;
 
         pet.name = name || pet.name;
         pet.species = species || pet.species;
@@ -84,6 +84,7 @@ const update = async (req, res) => {
         pet.age = age ?? pet.age;
         pet.gender = gender || pet.gender;
         pet.description = description || pet.description;
+        pet.images = images || pet.images;
 
         await pet.save();
         return res.status(200).json({ msg: 'Pet updated successfully', pet });
