@@ -1,34 +1,34 @@
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
-  name: { 
-    type: String, 
-    required: true, 
-    trim: true 
+  name: {
+    type: String,
+    required: true,
+    trim: true
   },
 
-  category: { 
-    type: String, 
-    required: true, 
-    trim: true 
+  category: {
+    type: String,
+    required: true,
+    trim: true
   },
 
-  price: { 
-    type: Number, 
-    required: true, 
-    min: 0 
+  price: {
+    type: Number,
+    required: true,
+    min: 0
   },
 
-  description: { 
-    type: String, 
+  description: {
+    type: String,
     trim: true,
-    maxlength: 1000 
+    maxlength: 1000
   },
 
-  stock_quantity: { 
-    type: Number, 
-    required: true, 
-    min: 0 
+  stock_quantity: {
+    type: Number,
+    required: true,
+    min: 0
   },
 
   images_url: [
@@ -52,15 +52,18 @@ const productSchema = new mongoose.Schema({
       }
     }
   ],
-
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 },
   {
-  timestamps: true 
-});
+    timestamps: true
+  });
 
 productSchema.pre("save", function (next) {
   if (this.images_url && this.images_url.length > 0) {
@@ -69,7 +72,7 @@ productSchema.pre("save", function (next) {
       if (!img.alt || img.alt.trim() === "") {
         img.alt = this.name;
       }
-      
+
       if (img.isMain) {
         mainCount++;
         if (mainCount > 1) {
@@ -78,7 +81,7 @@ productSchema.pre("save", function (next) {
       }
       return img;
     });
-    
+
     if (mainCount === 0) {
       this.images_url[0].isMain = true;
     }

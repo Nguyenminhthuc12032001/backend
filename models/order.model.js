@@ -7,14 +7,18 @@ const orderSchema = new mongoose.Schema({
     required: true 
   },
   total_amount: { 
-    type: Number, 
+    type: Number,
     required: true, 
     min: 0 
-  }, 
+  },
   status: { 
-    type: String, 
+    type: String,
     enum: ["pending", "paid", "shipped", "completed", "cancelled"], 
     default: "pending" 
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
   },
   order_date: { 
     type: Date, 
