@@ -10,6 +10,10 @@ const appointmentSchema = new mongoose.Schema({
     enum: ["scheduled", "completed", "cancelled", "missed"], 
     default: "scheduled"
   },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
   createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 

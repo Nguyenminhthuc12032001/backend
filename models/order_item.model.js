@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const orderItemSchema = new mongoose.Schema({
   order_id: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: "Order", 
+    ref: "Order",
     required: true 
   },
   product_id: { 
@@ -11,7 +11,7 @@ const orderItemSchema = new mongoose.Schema({
     ref: "Product", 
     required: true 
   },
-  quantity: { 
+  quantity: {
     type: Number, 
     required: true, 
     min: 1 
@@ -20,6 +20,10 @@ const orderItemSchema = new mongoose.Schema({
     type: Number, 
     required: true, 
     min: 0 
+  },
+  isDelete: {
+    type: Boolean,
+    default: false
   },
   createdAt: {
     type: Date,

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 
 //Chức năng tạo pet mới cho chủ sỡ hữu (owner_id)
 const createNew = async (req, res) => {
+  console.log("CREAT NEW is CALLING...");
     try {
         
         //Nhận giá trị từ frontend
@@ -24,7 +25,7 @@ const createNew = async (req, res) => {
 //Lấy tất cả dữ liệu của Pet chủ sỡ hữu
 const getAll = async (req, res) => {
     userid =  req.user.id;
-    console.log(userid);
+    console.log("Get ALL calling...");
   try {
     const pets = await petModel.find({ owner_id: userid });
 
@@ -36,6 +37,21 @@ const getAll = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
+};
+//Lấy tất cả dữ liệu của Pet chủ sỡ hữu
+const getAllAdmin = async (req, res) => {
+  console.log("GET ALL ADMIN CALLING.....");
+ try {
+  const pets = await petModel.find().populate("owner_id", "name email");
+
+  if (!pets || pets.length === 0) {
+    return res.status(404).json({ msg: "No pets found for this owner" });
+  }
+
+  return res.status(200).json({ pets });
+} catch (error) {
+  return res.status(500).json({ error: error.message });
+}
 };
 
 //Lấy 1 pet theo id
@@ -52,6 +68,7 @@ const get = async (req, res) => {
 };
 //Cập nhật pet
 const update = async (req, res) => {
+  console.log("UPDATE IS CALLING.....");
     try {
         //req.params.id → lấy id từ URL (/pets/:id).
         const pet = await petModel.findById(req.params.id);
@@ -59,7 +76,7 @@ const update = async (req, res) => {
             return res.status(404).json({ msg: 'Pet not found' });
         }
 
-        const { name, species, breed, age, gender, description } = req.body;
+        const { name, species, breed, age, gender, description, images } = req.body;
 
         pet.name = name || pet.name;
         pet.species = species || pet.species;
@@ -67,6 +84,7 @@ const update = async (req, res) => {
         pet.age = age ?? pet.age;
         pet.gender = gender || pet.gender;
         pet.description = description || pet.description;
+        pet.images = images || pet.images;
 
         await pet.save();
         return res.status(200).json({ msg: 'Pet updated successfully', pet });
@@ -78,7 +96,7 @@ const update = async (req, res) => {
 
 //xóa pet(remove)
 const remove = async (req, res) => {
-    
+    console.log("REMOVE IS CALLING.....");
     // 🔎 Kiểm tra ObjectId hợp lệ
     const { id } = req.params; 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -97,6 +115,7 @@ const remove = async (req, res) => {
 
 //Tìm kiếm pet theo tiêu chí
 const search = async (req, res) => {
+  console.log("SEARCHPET IS CALLING.....");
     try {
         const query = {};
         if (req.query.name) {
@@ -184,6 +203,7 @@ const removeImage = async (req, res) => {
 module.exports = {
     createNew,
     getAll,
+    getAllAdmin,
     get,
     update,
     search,

@@ -3,12 +3,11 @@ const userModel = require('../models/user.model');
 require('dotenv').config();
 
 const verifyToken = async (req, res, next) => {
+    console.log(req.headers)
     const authHeader = req.headers.authorization;
-    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ msg: 'Unauthorized access' });
     }
-
     const token = authHeader.split(' ')[1];
 
     try {
@@ -17,7 +16,7 @@ const verifyToken = async (req, res, next) => {
         if (!user) {
             return res.status(401).json({ msg: "User not found" })
         }
-        if(!decoded.verifyToken != user.versionToken) {
+        if (decoded.versionToken !== user.versionToken) {
             return res.status(401).json({ msg: "Token expired due to password change" })
         }
         req.user = decoded;

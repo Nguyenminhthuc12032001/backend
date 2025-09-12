@@ -29,7 +29,7 @@ const createNew = async (req, res) => {
             <p>Click link below to verify your email:</p>
             <a href="${verifyLink}">${verifyLink}</a>`
         )
-        return res.status(201).json({ msg: 'User created successfully', admin: newUser });
+        return res.status(201).json({ msg: 'User created successfully', user: newUser });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -37,12 +37,12 @@ const createNew = async (req, res) => {
 
 const verifyEmail = async (req, res) => {
     try {
-        const { token } = req.body;
+        const token = req.query.token;
         const tokenDoc = await tokenModel.findOne({ token, type_token: "register" });
         if (!tokenDoc) {
             return res.status(404).json({ msg: "Invalid or expired token" });
         }
-        await userModel.findByIdAndUpdate(tokenDoc.user_id, { is_verified: true });
+        await userModel.findOneAndUpdate({ _id: tokenDoc.user_id, isDeleted: false }, { is_verified: true });
         await tokenModel.deleteOne({ _id: tokenDoc._id });
         return res.status(200).json({ msg: "Email verified successfully" });
     } catch (error) {
@@ -52,7 +52,7 @@ const verifyEmail = async (req, res) => {
 
 const getAll = async (req, res) => {
     try {
-        const users = await userModel.find();
+        const users = await userModel.find({ isDeleted: false });
         return res.status(200).json({ users });
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -61,11 +61,11 @@ const getAll = async (req, res) => {
 
 const get = async (req, res) => {
     try {
-        const user = await userModel.findById(req.params.id)
+        const user = await userModel.findOne({ _id: req.params.id, isDeleted: false })
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
-        return res.status(200).json({ admin });
+        return res.status(200).json({ user });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -73,7 +73,7 @@ const get = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const user = await userModel.findById(req.params.id);
+        const user = await userModel.findOne({ _id: req.params.id, isDeleted: false });
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
@@ -83,6 +83,10 @@ const update = async (req, res) => {
         user.phone_number = phone_number || user.phone_number;
         user.password_hash = password_hash || user.password_hash;
         user.role = role || user.role;
+        
+        if(password_hash || email) {
+            user.versionToken++
+        }
         await user.save();
         return res.status(200).json({ msg: 'User updated successfully', user });
     } catch (error) {
@@ -93,7 +97,7 @@ const update = async (req, res) => {
 const resetPasswordRequest = async (req, res) => {
     try {
         const { email } = req.body;
-        const user = await userModel.findOne({ email });
+        const user = await userModel.findOne({ email, isDeleted: false });
         if (!user) {
             return res.status(404).json({ msg: "User not found" });
         }
@@ -125,14 +129,14 @@ const resetPassword = async (req, res) => {
         if (!tokenDoc) {
             return res.status(404).json({ msg: 'Invalid or expired token' });
         }
-        const user = await userModel.findById(tokenDoc.user_id);
+        const user = await userModel.findOne({ _id: tokenDoc.user_id, isDeleted: false });
         if (!user) {
             return res.status(404).json({ msg: "User not found." })
         }
         user.password_hash = password_hash;
         user.versionToken += 1;
         await user.save();
-        await tokenModel.deleteOne({_id: tokenDoc._id });
+        await tokenModel.deleteOne({ _id: tokenDoc._id });
         return res.status(200).json({ msg: "Reset password successfully. "})
     } catch (error) {
         return res.status(500).json({ error: error.message })
@@ -141,9 +145,9 @@ const resetPassword = async (req, res) => {
 
 const remove = async (req, res) => {
     try {
-        const result = await userModel.deleteOne({ _id: req.params.id });
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ msg: 'User not found, unable to delete' });
+        const deletedUser = await userModel.findOneAndUpdate({ _id: req.params.id, isDeleted: false }, { isDeleted: true });
+        if (!deletedUser) {
+            return res.status(404).json({ msg: 'Unable to delete' });
         }
         return res.status(200).json({ msg: 'User deleted successfully' });
     } catch (error) {
@@ -160,7 +164,7 @@ const search = async (req, res) => {
         if (req.query.role) {
             query.role = { $regex: req.query.role, $options: 'i' };
         }
-        const users = await userModel.find(query);
+        const users = await userModel.find({ ...query, isDeleted: false});
         return res.status(200).json({ users });
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -170,7 +174,7 @@ const search = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password_hash } = req.body;
-        const user = await userModel.findOne({ email });
+        const user = await userModel.findOne({ email, isDeleted: false });
         if (!user) {
             return res.status(401).json({ msg: 'User not found'});
         }

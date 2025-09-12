@@ -1,17 +1,18 @@
 const productModel = require('../models/product.model');
+const deleteImage = require('../utils/deleteImage');
 
 const createNew = async (req, res) => {
     try {
-        const { name, category, price, description, stock_quantity } = req.body;
+        const { name, category, price, description, stock_quantity, images_url } = req.body;
 
         const newProduct = new productModel({
             name,
             category,
             price,
             description,
-            stock_quantity
+            stock_quantity,
+            images_url
         });
-
         await newProduct.save();
         return res.status(201).json({ msg: 'Product created successfully', product: newProduct });
     } catch (error) {
@@ -21,7 +22,7 @@ const createNew = async (req, res) => {
 
 const getAll = async (req, res) => {
     try {
-        const products = await productModel.find();
+        const products = await productModel.find({ isDeleted: false });
         return res.status(200).json({ products });
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -30,7 +31,7 @@ const getAll = async (req, res) => {
 
 const get = async (req, res) => {
     try {
-        const product = await productModel.findById(req.params.id);
+        const product = await productModel.findOne({ _id: req.params.id, isDeleted: false });
         if (!product) {
             return res.status(404).json({ msg: 'Product not found' });
         }
@@ -42,12 +43,23 @@ const get = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const product = await productModel.findById(req.params.id);
+        const product = await productModel.findOne({ _id: req.params.id, isDeleted: false });
         if (!product) {
             return res.status(404).json({ msg: 'Product not found' });
         }
 
-        const { name, category, price, description, stock_quantity } = req.body;
+        const { name, category, price, description, stock_quantity, images_url } = req.body;
+
+        if (images_url && Array.isArray(images_url)) {
+            const imagesToDelete = product.images_url.filter(
+                oldImg => !images_url.some(newImg => newImg.public_id === oldImg.public_id)
+            );
+
+            for (const img of imagesToDelete) {
+                await deleteImage(img.public_id)
+            }
+            product.images_url = images_url;
+        }
 
         product.name = name || product.name;
         product.category = category || product.category;
@@ -64,9 +76,17 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
     try {
-        const result = await productModel.deleteOne({ _id: req.params.id });
+        const product = await productModel.findOne({ _id: req.params.id, isDeleted: false });
+        if (!product) {
+            return res.status(404).json({ msg: "Product not found." })
+        }
+        for (const img of product.images_url) {
+            await deleteImage(img.public_id);
+        }
+
+        const result = await product.deleteOne();
         if (result.deletedCount === 0) {
-            return res.status(404).json({ msg: 'Product not found, unable to delete' });
+            return res.status(404).json({ msg: 'Failed to delete product' });
         }
         return res.status(200).json({ msg: 'Product deleted successfully' });
     } catch (error) {
@@ -84,7 +104,7 @@ const search = async (req, res) => {
             query.category = { $regex: req.query.category, $options: 'i' };
         }
 
-        const products = await productModel.find(query);
+        const products = await productModel.find({ ...query, isDeleted: false });
         return res.status(200).json({ products });
     } catch (error) {
         return res.status(500).json({ error: error.message });
