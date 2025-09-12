@@ -24,6 +24,10 @@ const healthRecordSchema = new mongoose.Schema({
        
     }
   ],
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
 
   insurance: [{ type: String }] // lưu nhiều bảo hiểm (mỗi item là string)
 }, { timestamps: true });

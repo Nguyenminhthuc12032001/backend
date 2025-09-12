@@ -21,6 +21,10 @@ const orderItemSchema = new mongoose.Schema({
     required: true, 
     min: 0 
   },
+  isDelete: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

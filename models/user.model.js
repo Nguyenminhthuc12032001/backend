@@ -24,13 +24,17 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'owner', 'doctor', "shelter"],
         default: 'owner'
     },
-    is_verified: { 
-        type: Boolean, 
-        default: false 
+    is_verified: {
+        type: Boolean,
+        default: false
     },
-    versionToken: { 
-        type: Number, 
-        default: 0 
+    versionToken: {
+        type: Number,
+        default: 0
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     },
     createdAt: {
         type: Date,

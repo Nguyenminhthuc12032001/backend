@@ -13,7 +13,6 @@ const createNew = async (req, res) => {
             stock_quantity,
             images_url
         });
-        console.log("Payload:", req.body);
         await newProduct.save();
         return res.status(201).json({ msg: 'Product created successfully', product: newProduct });
     } catch (error) {
@@ -23,7 +22,7 @@ const createNew = async (req, res) => {
 
 const getAll = async (req, res) => {
     try {
-        const products = await productModel.find();
+        const products = await productModel.find({ isDeleted: false });
         return res.status(200).json({ products });
     } catch (error) {
         return res.status(500).json({ error: error.message });
