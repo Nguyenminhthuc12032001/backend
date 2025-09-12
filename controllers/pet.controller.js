@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 
 //Chức năng tạo pet mới cho chủ sỡ hữu (owner_id)
 const createNew = async (req, res) => {
+  console.log("CREAT NEW is CALLING...");
     try {
         
         //Nhận giá trị từ frontend
@@ -39,6 +40,7 @@ const getAll = async (req, res) => {
 };
 //Lấy tất cả dữ liệu của Pet chủ sỡ hữu
 const getAllAdmin = async (req, res) => {
+  console.log("GET ALL ADMIN CALLING.....");
  try {
   const pets = await petModel.find().populate("owner_id", "name email");
 
