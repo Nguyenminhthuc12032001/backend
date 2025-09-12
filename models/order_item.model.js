@@ -16,11 +16,6 @@ const orderItemSchema = new mongoose.Schema({
     required: true, 
     min: 1 
   },
-  price_each: { 
-    type: Number, 
-    required: true, 
-    min: 0 
-  },
   isDelete: {
     type: Boolean,
     default: false

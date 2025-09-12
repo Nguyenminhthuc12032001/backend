@@ -1,5 +1,6 @@
 const userModel = require('../models/user.model');
-const tokenModel = require('../models/token.model')
+const orderModel = require('../models/order.model')
+const tokenModel = require('../models/token.model');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
 require('dotenv').config();
@@ -14,6 +15,7 @@ const createNew = async (req, res) => {
         }
         const newUser = new userModel({ name, email, phone_number, password_hash, role });
         await newUser.save();
+        await orderModel.create({ user_id, total_amount: 0 });
         const token = crypto.randomBytes(32).toString("hex");
         await tokenModel.create({
             user_id: newUser._id,
