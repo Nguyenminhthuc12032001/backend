@@ -31,7 +31,7 @@ const getAll = async (req, res) => {
 
 const get = async (req, res) => {
     try {
-        const product = await productModel.findById(req.params.id);
+        const product = await productModel.findOne({ _id: req.params.id, isDeleted: false });
         if (!product) {
             return res.status(404).json({ msg: 'Product not found' });
         }
@@ -43,7 +43,7 @@ const get = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const product = await productModel.findById(req.params.id);
+        const product = await productModel.findOne({ _id: req.params.id, isDeleted: false });
         if (!product) {
             return res.status(404).json({ msg: 'Product not found' });
         }
@@ -76,7 +76,7 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
     try {
-        const product = await productModel.findById(req.params.id);
+        const product = await productModel.findOne({ _id: req.params.id, isDeleted: false });
         if (!product) {
             return res.status(404).json({ msg: "Product not found." })
         }
@@ -104,7 +104,7 @@ const search = async (req, res) => {
             query.category = { $regex: req.query.category, $options: 'i' };
         }
 
-        const products = await productModel.find(query);
+        const products = await productModel.find({ ...query, isDeleted: false });
         return res.status(200).json({ products });
     } catch (error) {
         return res.status(500).json({ error: error.message });

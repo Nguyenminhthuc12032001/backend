@@ -1,20 +1,20 @@
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
-  user_id: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "User", 
-    required: true 
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
   },
   total_amount: { 
     type: Number,
-    required: true, 
-    min: 0 
+    required: true,
+    min: 0
   },
-  status: { 
+  status: {
     type: String,
-    enum: ["pending", "paid", "shipped", "completed", "cancelled"], 
-    default: "pending" 
+    enum: ["incart", "created", "cancelled"],
+    default: "incart"
   },
   isDeleted: {
     type: Boolean,
