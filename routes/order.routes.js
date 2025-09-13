@@ -18,4 +18,6 @@ router.get('/search', [verifyToken, checkRole('admin')], orderController.search)
 
 router.get('/totalItems', [verifyToken], orderController.totalItems);
 
+router.get('/getCurrentCart', [verifyToken], orderController.getCurrentCart);
+
 module.exports = router;

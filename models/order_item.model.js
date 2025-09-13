@@ -16,7 +16,7 @@ const orderItemSchema = new mongoose.Schema({
     required: true, 
     min: 1 
   },
-  isDelete: {
+  isDeleted: {
     type: Boolean,
     default: false
   },

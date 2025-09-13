@@ -2,6 +2,7 @@ const { default: mongoose } = require('mongoose');
 const orderModel = require('../models/order.model');
 const orderItemModel = require('../models/order_item.model');
 const productModel = require('../models/product.model');
+const userModel = require('../models/user.model');
 
 const createOrder = async (req, res) => {
     const session = await mongoose.startSession();
@@ -9,6 +10,9 @@ const createOrder = async (req, res) => {
 
     try {
         const { user_id, total_amount, items } = req.body;
+        if (req.user.id.toString() !== user_id.toString()) {
+            return res.status(403).json({ msg: "You cannot create an order for another user." })
+        }
         const newOrder = new orderModel({ user_id, total_amount, status: "ordered" });
         await newOrder.save({ session })
 
@@ -18,7 +22,7 @@ const createOrder = async (req, res) => {
             quantity: item.quantity,
             price_each: item.price_each
         }));
-        await orderItemModel.insertMany(orderItems);
+        await orderItemModel.insertMany(orderItems, { session });
         await session.commitTransaction();
         session.endSession();
         return res.status(201).json({ msg: 'Order created successfully', order: newOrder });
@@ -32,6 +36,12 @@ const createOrder = async (req, res) => {
 const getAll = async (req, res) => {
     try {
         const orders = await orderModel.find({ isDeleted: false }).populate('user_id', 'name email');
+        for (const order of orders) {
+            const user_order = await userModel.findOne({ _id: order.user_id, isDeleted: false });
+            if (!user_order) {
+                await order.updateOne({ isDeleted: true });
+            }
+        }
         return res.status(200).json({ orders });
     } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -44,7 +54,21 @@ const get = async (req, res) => {
         if (!order) {
             return res.status(404).json({ msg: 'Order not found' });
         }
-        return res.status(200).json({ order });
+        const order_items = await orderItemModel.find({ order_id: order._id, isDeleted: false }).populate("product_id", "name category price");;
+        return res.status(200).json({ order, order_items });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+const getCurrentCart = async (req, res) => {
+    try {
+        const order = await orderModel.findOne({ user_id: req.user.id, status: "cart", isDeleted: false }).populate('user_id', 'name email');
+        if (!order) {
+            return res.status(404).json({ msg: 'Order not found' });
+        }
+        const order_items = await orderItemModel.find({ order_id: order._id, isDeleted: false }).populate("product_id", "name category price");;
+        return res.status(200).json({ order, order_items });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -54,7 +78,8 @@ const addItems = async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const { user_id, product_id, quantity } = req.body;
+        const { product_id, quantity } = req.body;
+        const user_id = req.user.id;
         const product = await productModel.findOne({ _id: product_id, isDeleted: false }).session(session);
         if (!product) {
             await session.abortTransaction();
@@ -109,8 +134,8 @@ const update = async (req, res) => {
             return res.status(404).json({ msg: "Order not found." })
         }
 
-        if (status === "cart") {
-            return res.status(400).json({ msg: "Cannot update user's cart directly." })
+        if (status === "cart" || order.status == "cart") {
+            return res.status(400).json({ msg: "Cart orders cannot have their status updated." })
         }
 
         if (!["complete", "cancelled"].includes(status)) {
@@ -187,5 +212,6 @@ module.exports = {
     update,
     remove,
     search,
-    totalItems
+    totalItems,
+    getCurrentCart
 };
