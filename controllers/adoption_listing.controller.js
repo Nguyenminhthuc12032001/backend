@@ -1,6 +1,7 @@
 const adoptionListingModel = require('../models/adoption_listing.model');
 const userModel = require('../models/user.model');
 const deleteImage = require('../utils/deleteImage');
+const sendEmail = require('../utils/sendEmail');
 
 const createNew = async (req, res) => {
     try {
@@ -159,7 +160,7 @@ const requestAdoption = async (req, res) => {
             `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; color: #333;">
                 <h2 style="color:#000;">Hello ${pet.shelter_id.name},</h2>
-                <p>Your request to adopt <strong>${pet.name}</strong> has been submitted successfully.</p>
+                <p>Your request to adopt <strong>${pet.pet_name}</strong> has been submitted successfully.</p>
                 <p>The shelter will review your request and contact you soon.</p>
                 <p style="margin-top:20px; font-size:14px; color:#555;">Thank you for choosing adoption.</p>
             </div>
@@ -190,7 +191,7 @@ const confirmAdoption = async (req, res) => {
             `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; color: #333;">
                 <h2 style="color:#000;">Congratulations ${pet.shelter_id.name},</h2>
-                <p>Your adoption request for <strong>${pet.name}</strong> has been <span style="color:green;font-weight:bold;">approved</span>.</p>
+                <p>Your adoption request for <strong>${pet.pet_name}</strong> has been <span style="color:green;font-weight:bold;">approved</span>.</p>
                 <p>The shelter will reach out with details to complete the process.</p>
                 <p style="margin-top:20px; font-size:14px; color:#555;">We’re happy to see a pet find a loving home.</p>
             </div>
@@ -220,7 +221,7 @@ const rejectAdoption = async (req, res) => {
             `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; color: #333;">
                 <h2 style="color:#000;">Hello ${pet.shelter_id.name},</h2>
-                <p>We’re sorry to inform you that your request to adopt <strong>${pet.name}</strong> has been <span style="color:red;font-weight:bold;">rejected</span>.</p>
+                <p>We’re sorry to inform you that your request to adopt <strong>${pet.pet_name}</strong> has been <span style="color:red;font-weight:bold;">rejected</span>.</p>
                 <p>You may explore other pets available for adoption in our listings.</p>
                 <p style="margin-top:20px; font-size:14px; color:#555;">Thank you for your kindness and understanding.</p>
             </div>
