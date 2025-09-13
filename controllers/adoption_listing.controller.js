@@ -178,7 +178,7 @@ const confirmAdoption = async (req, res) => {
         if (req.user.role != "shelter") {
             return res.status(403).json({ msg: "Only shelter can confirm this adoption." })
         }
-        const { pet_id } = req.body;
+        const pet_id = req.params.id;
         const pet = await adoptionListingModel.findOne({ _id: pet_id, status: "pending", isDeleted: false }).populate("shelter_id", "email name");
         if (!pet) {
             return res.status(404).json({ msg: "Adoption request not found." });
@@ -208,12 +208,12 @@ const rejectAdoption = async (req, res) => {
         if (req.user.role != "shelter") {
             return res.status.json({ msg: "Only shelter can confirm this adoption." })
         }
-        const { pet_id } = req.body;
+        const pet_id = req.params.id;
         const pet = await adoptionListingModel.findOne({ _id: pet_id, status: "pending", isDeleted: false }).populate("shelter_id", "email name");
         if (!pet) {
             return res.status(404).json({ msg: "Adoption request not found." });
         }
-        res.status = "available";
+        pet.status = "available";
         await pet.save();
         await sendEmail(
             pet.shelter_id.email,
@@ -229,6 +229,7 @@ const rejectAdoption = async (req, res) => {
         );
         return res.status(200).json({ msg: "Adoption rejected." })
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ error: error.message })
     }
 }
