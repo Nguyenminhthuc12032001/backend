@@ -1,46 +1,23 @@
 const router = require('express').Router();
 const { verifyToken, checkRole } = require('../middlewares/authentication.middlewares');
 const orderController = require('../controllers/order.controller');
-const { body, validationResult } = require('express-validator');
 
-router.post('/createNew',
-    [
-        verifyToken,
-        checkRole('owner'),
-        body('total_amount').isFloat({ min: 0 }).withMessage('Total amount must be non-negative'),
-        body('status').optional().isIn(['pending','paid','shipped','completed','cancelled']),
-        (req, res, next) => {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-            next();
-        }
-    ],
-    orderController.createNew
-);
+router.post('/createOrder', [verifyToken], orderController.createOrder);
 
 router.get('/getAll', [verifyToken, checkRole('admin')], orderController.getAll);
 
-router.get('/get/:id', [verifyToken], orderController.get);
+router.get('/get/:id', [verifyToken, checkRole('admin')], orderController.get);
 
-router.put('/update/:id',
-    [
-        verifyToken,
-        body('status').optional().isIn(['pending','paid','shipped','completed','cancelled']),
-        (req, res, next) => {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-            next();
-        }
-    ],
-    orderController.update
-);
+router.put('/addItems', [verifyToken], orderController.addItems);
 
-router.delete('/remove/:id', [verifyToken, checkRole('admin')], orderController.remove);
+router.put('/update/:id', [verifyToken, checkRole('admin')], orderController.update);
 
-router.get('/search', [verifyToken], orderController.search);
+router.post('/remove/:id', [verifyToken, checkRole('admin')], orderController.remove);
+
+router.get('/search', [verifyToken, checkRole('admin')], orderController.search);
+
+router.get('/totalItems', [verifyToken], orderController.totalItems);
+
+router.get('/getCurrentCart', [verifyToken], orderController.getCurrentCart);
 
 module.exports = router;

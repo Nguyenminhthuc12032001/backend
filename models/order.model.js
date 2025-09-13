@@ -8,21 +8,23 @@ const orderSchema = new mongoose.Schema({
   },
   total_amount: { 
     type: Number,
-    required: true,
-    min: 0
+    default: 0
   },
   status: {
     type: String,
-    enum: ["incart", "created", "cancelled"],
-    default: "incart"
+    enum: ["cart", "ordered", "complete", "cancelled"],
+    default: "cart"
   },
   isDeleted: {
     type: Boolean,
     default: false
   },
   order_date: { 
-    type: Date, 
-    default: Date.now 
+    type: Date
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
 }, { 
   timestamps: true 

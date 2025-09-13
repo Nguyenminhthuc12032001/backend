@@ -1,5 +1,6 @@
 const userModel = require('../models/user.model');
-const tokenModel = require('../models/token.model')
+const orderModel = require('../models/order.model')
+const tokenModel = require('../models/token.model');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
 require('dotenv').config();
@@ -9,12 +10,16 @@ const { console } = require('inspector');
 const createNew = async (req, res) => {
     try {
         const { name, email, phone_number, password_hash, role } = req.body;
-        const existingUser = await userModel.findOne({ email });
+        if (role === "admin") {
+            return res.status(403).json({ msg: "Admin accounts cannot be created." })
+        }
+        const existingUser = await userModel.findOne({ email, isDeleted: false });
         if (existingUser) {
             return res.status(400).json({ msg: 'Email already exists' });
         }
         const newUser = new userModel({ name, email, phone_number, password_hash, role });
         await newUser.save();
+        await orderModel.create({ user_id: newUser._id, total_amount: 0 });
         const token = crypto.randomBytes(32).toString("hex");
         await tokenModel.create({
             user_id: newUser._id,
@@ -44,7 +49,7 @@ const verifyEmail = async (req, res) => {
         }
         await userModel.findOneAndUpdate({ _id: tokenDoc.user_id, isDeleted: false }, { is_verified: true });
         await tokenModel.deleteOne({ _id: tokenDoc._id });
-        return res.status(200).json({ msg: "Email verified successfully" });
+        return res.redirect(`${process.env.FRONTEND_URL}/email-verified`);
     } catch (error) {
         return res.status(500).json({ error: error.message })
     }
@@ -101,14 +106,17 @@ const resetPasswordRequest = async (req, res) => {
         if (!user) {
             return res.status(404).json({ msg: "User not found" });
         }
+        
+        await tokenModel.deleteMany({ user_id: user._id, type_token: "reset_password" });
 
-        const token = crypto.randomBytes(32).toString("hex");
+        const rawToken = crypto.randomBytes(32).toString("hex");
+        const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
         await tokenModel.create({
             user_id: user._id,
-            token,
+            token: hashedToken,
             type_token: "reset_password"
         });
-        const resetLink = `${process.env.FRONTEND_URL}/resetPassword?token=${token}`;
+        const resetLink = `${process.env.FRONTEND_URL}/resetPassword?token=${rawToken}`;
         await sendEmail(
             user.email,
             "Reset your password",
@@ -124,8 +132,9 @@ const resetPasswordRequest = async (req, res) => {
 
 const resetPassword = async (req, res) => {
     try {
-        const { token, password_hash } = req.body;
-        const tokenDoc = await tokenModel.findOne({ token, type_token: "reset_password" });
+        const { rawToken, password_hash } = req.body;
+        const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+        const tokenDoc = await tokenModel.findOne({ token: hashedToken, type_token: "reset_password" });
         if (!tokenDoc) {
             return res.status(404).json({ msg: 'Invalid or expired token' });
         }
@@ -137,7 +146,7 @@ const resetPassword = async (req, res) => {
         user.versionToken += 1;
         await user.save();
         await tokenModel.deleteOne({ _id: tokenDoc._id });
-        return res.status(200).json({ msg: "Reset password successfully. "})
+        return res.status(200).json({ msg: "Your password has been reset successfully."})
     } catch (error) {
         return res.status(500).json({ error: error.message })
     }
