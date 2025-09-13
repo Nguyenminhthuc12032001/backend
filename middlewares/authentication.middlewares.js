@@ -28,7 +28,6 @@ const verifyToken = async (req, res, next) => {
 
 const checkRole = (requiredRole) => {
     return (req, res, next) => {
-        //if admin then override current validation
         if (req.user && req.user.role === 'admin') {
             return next();
         }

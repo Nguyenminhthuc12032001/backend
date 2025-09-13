@@ -8,7 +8,7 @@ const createNew = async (req, res) => {
         
         //Nhận giá trị từ frontend
         owner_id=req.user.id;
-        const {name, species, breed, age, gender, description,images } = req.body;
+        const {name, species, breed, age, gender, description, images } = req.body;
         const newPet = new petModel({ owner_id, name, species, breed, age, gender, description,images });
         /*
         await newPet.save() → lưu vào MongoDB.

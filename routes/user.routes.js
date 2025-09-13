@@ -3,7 +3,7 @@ const { verifyToken, checkRole } = require('../middlewares/authentication.middle
 const userController = require('../controllers/user.controller');
 const { validUser, validUserUpdate } = require('../middlewares/user.middleware');
 
-router.post('/createNew', [validUser], userController.createNew);
+router.post('/createNew', [validUser, validUser], userController.createNew);
 
 router.get('/getAll', [verifyToken, checkRole('admin')], userController.getAll);
 

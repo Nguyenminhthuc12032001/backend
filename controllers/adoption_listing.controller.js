@@ -46,6 +46,31 @@ const getAll = async (req, res) => {
     }
 };
 
+const getAllMine = async (req, res) => {
+    try {
+        if (req.user.role !== "shelter") {
+            return res.status(403).json({ msg: "Sorry, this feature is reserved for shelter accounts only." })
+        }
+        const shelter_id = req.user.id;
+        const listings = await adoptionListingModel.find({ shelter_id, isDeleted: false })
+            .populate('shelter_id', 'name email role');
+
+        await Promise.all(
+            listings.map(async (pet) => {
+                if (pet.shelter_id.role != "shelter") {
+                    pet.isDeleted = true;
+                    await pet.save();
+                    for (const img of pet.images_url) {
+                        await deleteImage(img.public_id);
+                    }
+                }
+            }))
+        return res.status(200).json({ listings });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+
 const get = async (req, res) => {
     try {
         const pet = await adoptionListingModel.findOne({ _id: req.params.id, isDeleted: false })
@@ -243,5 +268,6 @@ module.exports = {
     search,
     requestAdoption,
     confirmAdoption,
-    rejectAdoption
+    rejectAdoption,
+    getAllMine
 };

@@ -10,11 +10,11 @@ const createOrder = async (req, res) => {
 
     try {
         const { user_id, total_amount, items } = req.body;
+        
+        user_id = req.user.id;
         if (req.user.id.toString() !== user_id.toString()) {
             return res.status(403).json({ msg: "You cannot create an order for another user." })
         }
-        const newOrder = new orderModel({ user_id, total_amount, status: "ordered" });
-        await newOrder.save({ session })
 
         const orderItems = items.map(item => ({
             order_id: newOrder._id,
@@ -22,6 +22,15 @@ const createOrder = async (req, res) => {
             quantity: item.quantity,
             price_each: item.price_each
         }));
+
+        total_amount = 0;
+        for (const item of orderItems) {
+            total_amount += item.quantity * item.price_each
+        }
+
+        const newOrder = new orderModel({ user_id, total_amount, status: "ordered" });
+        await newOrder.save({ session })
+
         await orderItemModel.insertMany(orderItems, { session });
         await session.commitTransaction();
         session.endSession();
