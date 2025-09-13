@@ -2,17 +2,14 @@ const appointmentModel = require('../models/appointment.model');
 
 const createNew = async (req, res) => {
     try {
-        const { pet_id, owner_id, vet_id, appointment_time, status } = req.body;
-
+        const { pet_id, owner_id, vet_id, appointment_time } = req.body;
         const newAppointment = new appointmentModel({
             pet_id,
             owner_id,
             vet_id,
             appointment_time,
-            status
         });
 
-        //auto assign vet if not provided
         if (!vet_id) {
             const User = require('../models/user.model');
             const Vet = await User.findOne({ role: 'vet' }).sort({ appointments: 1 });
