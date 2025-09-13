@@ -44,4 +44,6 @@ router.delete('/remove/:id', [verifyToken, checkRole('admin')], appointmentContr
 
 router.get('/search', [verifyToken], appointmentController.search);
 
+router.post('/setcompleted/:id', [verifyToken, checkRole('vet')], appointmentController.completeCase);
+
 module.exports = router;

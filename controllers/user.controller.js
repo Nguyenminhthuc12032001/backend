@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
 require('dotenv').config();
 const crypto = require("crypto");
+const { console } = require('inspector');
 
 const createNew = async (req, res) => {
     try {
@@ -184,7 +185,7 @@ const login = async (req, res) => {
         const { email, password_hash } = req.body;
         const user = await userModel.findOne({ email, isDeleted: false });
         if (!user) {
-            return res.status(401).json({ msg: 'User not found' });
+            return res.status(401).json({ msg: 'User not found'});
         }
         const isMatch = await user.comparePassword(password_hash);
         if (!isMatch) {
