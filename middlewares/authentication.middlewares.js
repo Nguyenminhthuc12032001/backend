@@ -28,6 +28,11 @@ const verifyToken = async (req, res, next) => {
 
 const checkRole = (requiredRole) => {
     return (req, res, next) => {
+        //if admin then override current validation
+        if (req.user && req.user.role === 'admin') {
+            return next();
+        }
+
         if (!req.user || req.user.role !== requiredRole) {
             return res.status(403).json({ msg: `Access denied: Requires ${requiredRole} role` });
         }
