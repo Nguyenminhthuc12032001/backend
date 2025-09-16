@@ -25,7 +25,7 @@ const validProduct = [
 
   body("images_url")
     .exists().withMessage("Product images are required.")
-    .isArray({ min: 1 })
+    .isArray({ min: 1, max: 10 })
     .withMessage("Images must be provided as an array with at least 1 item."),
 
   (req, res, next) => {
@@ -43,7 +43,7 @@ const validProductUpdate = [
   body("price").optional().isDecimal({ decimal_digits: "0,2" }).withMessage("Price must be a valid number (e.g. 10.99)."),
   body("description").optional().trim().notEmpty().withMessage("Product description cannot be empty."),
   body("stock_quantity").optional().isInt({ min: 0 }).withMessage("Stock quantity must be a positive integer."),
-  body("images_url").optional().isArray().withMessage("Product images must be an array."),
+  body("images_url").optional().isArray({ min: 1, max: 10 }).withMessage("Product images must be an array."),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

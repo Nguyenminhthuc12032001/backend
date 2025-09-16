@@ -3,7 +3,6 @@ const userModel = require('../models/user.model');
 require('dotenv').config();
 
 const verifyToken = async (req, res, next) => {
-    console.log(req.headers)
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ msg: 'Unauthorized access' });
@@ -26,13 +25,13 @@ const verifyToken = async (req, res, next) => {
     }
 };
 
-const checkRole = (requiredRole) => {
+const checkRole = (allowedRoles = []) => {
     return (req, res, next) => {
         if (req.user && req.user.role === 'admin') {
             return next();
         }
 
-        if (!req.user || req.user.role !== requiredRole) {
+        if (!req.user || !allowedRoles.includes(req.user.role)) {
             return res.status(403).json({ msg: `Access denied: Requires ${requiredRole} role` });
         }
         next();

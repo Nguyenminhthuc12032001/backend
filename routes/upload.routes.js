@@ -3,7 +3,7 @@ const router = express.Router();
 const crypto = require("crypto");
 const { verifyToken, checkRole } = require('../middlewares/authentication.middlewares');
 
-router.post('/sign-upload', [verifyToken, checkRole("admin")], (req, res) => {
+router.post('/sign-upload', [verifyToken, checkRole(["admin", "shelter", "owner"])], (req, res) => {
   const timestamp = Math.round(new Date().getTime() / 1000);
 
   const { folder } = req.body;

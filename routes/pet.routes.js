@@ -15,7 +15,7 @@ router.get("/getAll", verifyToken, petController.getAll);
 
 
 // 🐶 Lấy tất cả pets cho Admin
-router.get("/getAllAdmin", verifyToken, checkRole("admin"), petController.getAllAdmin);
+router.get("/getAllAdmin", verifyToken, checkRole(["admin"]), petController.getAllAdmin);
 
 // 🐶 Lấy 1 pet theo id
 router.get("/get/:id", verifyToken, petController.get);

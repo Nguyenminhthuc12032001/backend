@@ -6,7 +6,7 @@ const { body, validationResult } = require('express-validator');
 router.post('/createNew',
     [
         verifyToken,
-        checkRole('owner'),
+        checkRole(['owner']),
         body('appointment_time').isISO8601().withMessage('Invalid date'),
         body('status').optional().isIn(['scheduled','completed','cancelled','missed']).withMessage('Invalid status'),
         (req, res, next) => {
@@ -20,7 +20,7 @@ router.post('/createNew',
     appointmentController.createNew
 );
 
-router.get('/getAll', [verifyToken, checkRole('admin')], appointmentController.getAll);
+router.get('/getAll', [verifyToken, checkRole(['admin'])], appointmentController.getAll);
 
 router.get('/get/:id', [verifyToken], appointmentController.get);
 
@@ -40,10 +40,10 @@ router.put('/update/:id',
     appointmentController.update
 );
 
-router.delete('/remove/:id', [verifyToken, checkRole('admin')], appointmentController.remove);
+router.delete('/remove/:id', [verifyToken, checkRole(['admin'])], appointmentController.remove);
 
 router.get('/search', [verifyToken], appointmentController.search);
 
-router.post('/setcompleted/:id', [verifyToken, checkRole('vet')], appointmentController.completeCase);
+router.post('/setcompleted/:id', [verifyToken, checkRole(['vet'])], appointmentController.completeCase);
 
 module.exports = router;

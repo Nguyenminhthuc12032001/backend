@@ -22,8 +22,18 @@ const createNew = async (req, res) => {
 
 const getAll = async (req, res) => {
     try {
-        const products = await productModel.find({ isDeleted: false });
-        return res.status(200).json({ products });
+        const limit = parseInt(req.query.limit) || 10;
+        const lastId = req.query.lastId;
+
+        const query = { isDeleted: false };
+        if (lastId) {
+            query._id = { $lt: lastId };
+        }
+        const products = await productModel.find(query).sort({ _id: -1 }).limit(limit);
+        return res.status(200).json({ 
+            products,
+            nextCursor: products.length > 0 ? products[products.length -1]._id : null
+        });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }

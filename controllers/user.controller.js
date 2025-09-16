@@ -57,8 +57,19 @@ const verifyEmail = async (req, res) => {
 
 const getAll = async (req, res) => {
     try {
-        const users = await userModel.find({ isDeleted: false });
-        return res.status(200).json({ users });
+        const limit = parseInt(req.query.limit) || 10;
+        const lastId = req.query.lastId;
+
+        const query = { isDeleted: false };
+        if (lastId) {
+            query._id = { $lt: lastId }
+        }
+
+        const users = (await userModel.find(query)).sort({ _id: -1 }).limit(limit);
+        return res.status(200).json({ 
+            users,
+            nextCursor: products.length > 0 ? products[products.length - 1]._id : null
+        });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }

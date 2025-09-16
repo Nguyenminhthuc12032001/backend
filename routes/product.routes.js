@@ -3,15 +3,15 @@ const { verifyToken, checkRole } = require('../middlewares/authentication.middle
 const productController = require('../controllers/product.controller');
 const { validProduct, validProductUpdate } = require('../middlewares/product.middleware');
 
-router.post('/createNew', [verifyToken, checkRole('admin'), validProduct], productController.createNew);
+router.post('/createNew', [verifyToken, checkRole(['admin']), validProduct], productController.createNew);
 
 router.get('/getAll', productController.getAll);
 
 router.get('/get/:id', productController.get);
 
-router.put('/update/:id', [verifyToken, checkRole('admin'), validProductUpdate], productController.update);
+router.put('/update/:id', [verifyToken, checkRole(['admin']), validProductUpdate], productController.update);
 
-router.post('/remove/:id', [verifyToken, checkRole('admin')], productController.remove);
+router.post('/remove/:id', [verifyToken, checkRole(['admin'])], productController.remove);
 
 router.get('/search', productController.search);
 

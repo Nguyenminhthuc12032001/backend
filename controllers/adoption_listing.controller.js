@@ -1,3 +1,4 @@
+const { query } = require('express-validator');
 const adoptionListingModel = require('../models/adoption_listing.model');
 const userModel = require('../models/user.model');
 const deleteImage = require('../utils/deleteImage');
@@ -27,7 +28,15 @@ const createNew = async (req, res) => {
 
 const getAll = async (req, res) => {
     try {
-        const listings = await adoptionListingModel.find({ isDeleted: false })
+        const limit = parseInt(req.query.limit) || 10;
+        const lastId = req.query.lastId;
+
+        const query = { isDeleted: false };
+        if (lastId) {
+            query._id = { $lt: lastId }
+        }
+
+        const listings = await adoptionListingModel.find(query).sort({ _id: -1 }).limit(limit)
             .populate('shelter_id', 'name email role');
 
         await Promise.all(
@@ -40,7 +49,10 @@ const getAll = async (req, res) => {
                     }
                 }
             }))
-        return res.status(200).json({ listings });
+        return res.status(200).json({ 
+            listings,
+            nextCursor: listings.length > 0 ? listings[listings.length - 1]._id : null
+        });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
